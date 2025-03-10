@@ -10,7 +10,7 @@ var server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: "https://chat-club-client.onrender.com",,
+    origin: "https://chat-club-client.onrender.com",
     methods: ["GET", "POST"]
   }
 });
