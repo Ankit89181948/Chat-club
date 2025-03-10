@@ -4,30 +4,23 @@ import { io } from "socket.io-client";
 
 const ChatRoom = () => {
   const location = useLocation();
-
   const [data, setData] = useState({});
   const [msg, setMsg] = useState("");
   const [allMessages, setMessages] = useState([]);
   const [socket, setSocket] = useState(null);
 
   useEffect(() => {
-    // Initialize socket connection
     const newSocket = io("http://localhost:9000");
     setSocket(newSocket);
 
-    // Join the room when socket connects
     newSocket.on("connect", () => {
-      console.log("Socket connected");
       newSocket.emit("joinRoom", location.state.room);
     });
 
-    // Listen for new messages
     newSocket.on("getLatestMessage", (newMessage) => {
       setMessages((prevMessages) => [...prevMessages, newMessage]);
-      
     });
 
-    // Cleanup socket on component unmount
     return () => {
       newSocket.disconnect();
     };
@@ -40,7 +33,7 @@ const ChatRoom = () => {
   const handleChange = (e) => setMsg(e.target.value);
 
   const handleEnter = (e) => {
-    if (e.keyCode === 13) {
+    if (e.key === "Enter") {
       onSubmit();
     }
   };
@@ -49,68 +42,55 @@ const ChatRoom = () => {
     if (msg && socket) {
       const newMessage = { time: new Date(), msg, name: data.name };
       socket.emit("newMessage", { newMessage, room: data.room });
-      setMessages((prevMessages) => [...prevMessages, newMessage]); 
-      setMsg(""); 
+      setMessages((prevMessages) => [...prevMessages, newMessage]);
+      setMsg("");
     }
   };
 
   return (
-    <div className="py-4 m-5 w-50 shadow bg-gray text-dark border rounded container" style={{backgroundColor:"#393e46"}}>
-      <div className="text-center px-3 mb-4 text-capitalize bg-white border rounded flex justify-center" style={{backgroundColor:"#f2f2f2"}}>
-        <h2 className=" mb-4">Room-Id: {data?.room}</h2>
+    <div className="flex flex-col h-screen bg-gray-900 text-white p-4">
+      {/* Room Header */}
+      <div className="bg-gray-800 p-4 rounded-lg text-center shadow-md">
+        <h2 className="text-xl font-semibold">Room ID: {data?.room}</h2>
       </div>
-      <div
-        className="border rounded p-3 mb-4"
-        style={{ height: "450px", overflowY: "scroll" }}
-      >
+
+      {/* Messages Display */}
+      <div className="flex-1 overflow-y-auto p-4 mt-4 space-y-4 bg-gray-700 rounded-lg shadow-md">
         {allMessages.map((message, index) => (
           <div
             key={index}
-            className={
-              data.name === message.name
-                ? "row justify-content-end pl-5"
-                : "row justify-content-start"
-            }
+            className={`flex ${data.name === message.name ? "justify-end" : "justify-start"}`}
           >
-            <div
-              className={`d-flex flex-column m-2  p-2 border rounded w-auto ${
-                data.name === message.name ? "bg-white align-items-end" : "bg-white"
-              }`}
-            >
-              <div>
-                <strong className="m-1 justify-content-start">{message.name}</strong>
-              </div>
-              <h4 className="m-1">{message.msg}</h4>
+            <div className={`p-3 max-w-xs rounded-lg shadow-lg ${data.name === message.name ? "bg-blue-500 text-white" : "bg-gray-600"}`}>
+              <p className="text-sm font-semibold">{message.name}</p>
+              <p>{message.msg}</p>
             </div>
           </div>
         ))}
-       
       </div>
-      <div className="form-group d-flex">
+
+      {/* Message Input */}
+      <div className="flex mt-4 items-center gap-2">
         <input
           type="text"
-          className="form-control bg-light"
-          name="message"
-          onKeyDown={handleEnter}
-          placeholder="Type your message"
+          className="flex-1 p-3 rounded-lg bg-gray-800 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="Type your message..."
           value={msg}
           onChange={handleChange}
+          onKeyDown={handleEnter}
         />
         <button
-          type="button"
-          className="btn  mx-2"
+          className="p-3 bg-blue-500 hover:bg-blue-600 rounded-lg shadow-lg"
           onClick={onSubmit}
-          style={{backgroundColor:"#f96d00"}}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
+            width="20"
+            height="20"
             fill="currentColor"
-            className="bi bi-send"
             viewBox="0 0 16 16"
           >
-            <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576 6.636 10.07Zm6.787-8.201L1.591 6.602l4.339 2.76 7.494-7.493Z"></path>
+            <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576 6.636 10.07Zm6.787-8.201L1.591 6.602l4.339 2.76 7.494-7.493Z" />
           </svg>
         </button>
       </div>

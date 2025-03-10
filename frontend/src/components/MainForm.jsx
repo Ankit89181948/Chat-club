@@ -4,8 +4,6 @@ import { io } from "socket.io-client";
 
 const MainForm = () => {
   const navigate = useNavigate();
-  
-
   const [error, setError] = useState("");
   const [mode, setMode] = useState("create"); // Default mode: Create Room
   const [data, setData] = useState({ name: "", room: "" });
@@ -16,20 +14,13 @@ const MainForm = () => {
     const newSocket = io("http://localhost:9000"); // Connect to your server
     setSocket(newSocket);
 
-    // Cleanup on unmount
     return () => {
       newSocket.disconnect();
     };
   }, []);
 
-  
-
   const handleChange = (e) => {
-    setData({
-      ...data,
-      [e.target.name]: e.target.value,
-    });
-
+    setData({ ...data, [e.target.name]: e.target.value });
   };
 
   // Validation logic 
@@ -46,78 +37,60 @@ const MainForm = () => {
     return true;
   };
 
-  
   const handleSubmit = (e) => {
-
     e.preventDefault();
-    const isValid = validation();
-    if (isValid) {
+    if (validation()) {
       if (mode === "create") {
-        // Emit createRoom event to the server
         socket.emit("createRoom", { roomName: data.name, userName: data.name });
-
-        // Listen for the roomCreated event from the server
-        socket.on("roomCreated", ({ roomId, roomName }) => {
-          
+        socket.on("roomCreated", ({ roomId }) => {
           navigate(`/chat/${roomId}`, { state: { ...data, room: roomId } });
         });
       } else {
-      
         navigate(`/chat/${data.room}`, { state: { ...data, room: data.room } });
       }
     }
-    
   };
 
   return (
-
-    <div className="main-form-container  px-4 py-5 shadow  border rounded row " style={{backgroundColor:"#393e46"}}>
-
-      <form onSubmit={handleSubmit}>
-
-        <div className="form-group mb-4">
-
-          <h2 className="mb-4">Welcome to Chatclub</h2>
-
-        </div>
-
-        {/* Toggle between Create Room and Join Room */}
-
-        <div className="form-group mb-4">
-
-          <label className="form-label me-3">
-            <input type="radio" value="create" checked={mode === "create"} onChange={() => setMode("create")} className="me-1" /> Create Room
-          </label>
-
-          <label className="form-label">
-            <input type="radio" value="join" checked={mode === "join"} onChange={() => setMode("join")} className="me-1" /> Join Room
-          </label>
-
-        </div>
-
-        {/* Name Field */}
-        <div className="form-group mb-4">
-          <input type="text" className="form-control bg-light" name="name" placeholder="Enter name" onChange={handleChange} />
-        </div>
-
-        {/* Room ID Field (only for Join Mode) */}
-        {
-          mode === "join" && (
-            <div className="form-group mb-4">
-              <input type="text" className="form-control bg-light" name="room" placeholder="Enter room ID" onChange={handleChange} />
-            </div>
-          )
-        }
-
-        
-
-        <button type="submit" className="btn btn-warning w-100 mb-2" style={{backgroundColor:"#f96d00"}}>
-          {mode === "create" ? "Create Room" : "Join Room"}
-        </button>
-
-        {error && <small className="text-danger m-auto">{error}</small>}
-
-      </form>
+    <div className="flex justify-center w-100 items-center min-h-screen bg-gray-900">
+      <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-96 text-white">
+        <h2 className="text-center text-2xl font-bold mb-4">Welcome to ChatClub</h2>
+        <form onSubmit={handleSubmit}>
+          <div className="flex justify-center gap-4 mb-4">
+            <label className="flex items-center gap-2">
+              <input type="radio" value="create" checked={mode === "create"} onChange={() => setMode("create")} className="accent-orange-500" />
+              Create Room
+            </label>
+            <label className="flex items-center gap-2">
+              <input type="radio" value="join" checked={mode === "join"} onChange={() => setMode("join")} className="accent-orange-500" />
+              Join Room
+            </label>
+          </div>
+          <input
+            type="text"
+            name="name"
+            placeholder="Enter your name"
+            className="w-full p-2 mb-4 rounded bg-gray-700 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-orange-500"
+            onChange={handleChange}
+          />
+          {mode === "join" && (
+            <input
+              type="text"
+              name="room"
+              placeholder="Enter room ID"
+              className="w-full p-2 mb-4 rounded bg-gray-700 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-orange-500"
+              onChange={handleChange}
+            />
+          )}
+          <button
+            type="submit"
+            className="w-full py-2 bg-orange-500 hover:bg-orange-600 rounded-lg text-white font-semibold transition"
+          >
+            {mode === "create" ? "Create Room" : "Join Room"}
+          </button>
+          {error && <p className="text-red-500 text-sm text-center mt-2">{error}</p>}
+        </form>
+      </div>
     </div>
   );
 };
