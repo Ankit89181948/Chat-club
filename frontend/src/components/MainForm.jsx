@@ -11,7 +11,7 @@ const MainForm = () => {
 
   // Initialize socket connection
   useEffect(() => {
-    const newSocket = io("http://localhost:9000"); // Connect to your server
+    const newSocket = io("https://chat-club-98v0.onrender.com"); // Connect to your server
     setSocket(newSocket);
 
     return () => {

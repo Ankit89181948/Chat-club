@@ -10,7 +10,7 @@ const ChatRoom = () => {
   const [socket, setSocket] = useState(null);
 
   useEffect(() => {
-    const newSocket = io("http://localhost:9000");
+    const newSocket = io("https://chat-club-98v0.onrender.com");
     setSocket(newSocket);
 
     newSocket.on("connect", () => {
